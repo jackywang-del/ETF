@@ -5154,6 +5154,19 @@
     function closeSigStockThSearch() { document.getElementById('sigStock-th-label').style.display = ''; const sf = document.getElementById('sigStock-th-search'); sf.classList.remove('open'); sf.querySelector('input').value = ''; sigSearchQ = ''; renderSignals(); }
     function openSigEtfThSearch() { document.getElementById('sigEtf-th-label').style.display = 'none'; const sf = document.getElementById('sigEtf-th-search'); sf.classList.add('open'); sf.querySelector('input').focus(); }
     function closeSigEtfThSearch() { document.getElementById('sigEtf-th-label').style.display = ''; const sf = document.getElementById('sigEtf-th-search'); sf.classList.remove('open'); sf.querySelector('input').value = ''; sigSearchQ = ''; renderSignals(); }
+    let sigfNameQ = '';
+    function openSigfThSearch() { document.getElementById('sigf-th-label').style.display = 'none'; const sf = document.getElementById('sigf-th-search'); sf.classList.add('open'); sf.querySelector('input').focus(); }
+    function closeSigfThSearch() { document.getElementById('sigf-th-label').style.display = ''; const sf = document.getElementById('sigf-th-search'); sf.classList.remove('open'); sf.querySelector('input').value = ''; sigfNameQ = ''; filterSigF(); }
+    let etfFNameQ = '';
+    function openEtfFThSearch() { document.getElementById('etff-th-label').style.display = 'none'; const sf = document.getElementById('etff-th-search'); sf.classList.add('open'); sf.querySelector('input').focus(); }
+    function closeEtfFThSearch() { document.getElementById('etff-th-label').style.display = ''; const sf = document.getElementById('etff-th-search'); sf.classList.remove('open'); sf.querySelector('input').value = ''; etfFNameQ = ''; filterEtfF(); }
+    window.filterEtfF = function() {
+      const q = etfFNameQ.toLowerCase();
+      document.querySelectorAll('#tbody-etf-futures tr[data-etf-sig]').forEach(tr => {
+        const name = tr.querySelector('td:nth-child(1)')?.textContent?.toLowerCase() || '';
+        tr.style.display = (!q || name.includes(q)) ? '' : 'none';
+      });
+    };
 
     // ═══════════════════════════════════════════
     // INIT
@@ -6511,7 +6524,17 @@
                 <thead data-slot="table-header" class="table-header">
                   <tr data-slot="table-row" class="table-row">
                     <th data-slot="table-head" class="table-head table-head-align-center" style="width:110px;position:sticky;left:0;z-index:12;background:var(--comp-sticky-col-bg);">關鍵訊號</th>
-                    <th data-slot="table-head" class="table-head table-head-align-left" style="min-width:200px;position:sticky;left:118px;z-index:12;background:var(--comp-sticky-col-bg);">期貨名稱</th>
+                    <th data-slot="table-head" class="table-head table-head-align-left" style="min-width:200px;position:sticky;left:118px;z-index:12;background:var(--comp-sticky-col-bg);overflow:hidden;">
+                      <span id="sigf-th-label" class="table-head-sort-container table-head-align-left">
+                        <button class="th-search-ico" type="button" onclick="openSigfThSearch();event.stopPropagation();"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg></button>
+                        <span>名稱</span>
+                      </span>
+                      <div id="sigf-th-search" class="th-search-field">
+                        <button class="th-search-ico" type="button" onclick="closeSigfThSearch();event.stopPropagation();"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg></button>
+                        <input type="text" style="width:0;flex:1;" placeholder="搜尋名稱" onclick="event.stopPropagation();" oninput="sigfNameQ=this.value;filterSigF()">
+                        <button class="th-search-field-close" type="button" onclick="closeSigfThSearch();event.stopPropagation();">✕</button>
+                      </div>
+                    </th>
                     <th data-slot="table-head" class="table-head table-head-align-right" style="min-width:90px;">金額(億)</th>
                     <th data-slot="table-head" class="table-head table-head-align-right" style="min-width:90px;">增減口數</th>
                     <th data-slot="table-head" class="table-head table-head-align-left" style="min-width:180px;">ETF</th>
@@ -6557,7 +6580,17 @@
             <table data-slot="table" class="table">
               <thead data-slot="table-header" class="table-header">
                 <tr data-slot="table-row" class="table-row">
-                  <th data-slot="table-head" class="table-head table-head-align-left" style="min-width:220px;position:sticky;left:0;z-index:12;background:var(--comp-sticky-col-bg);">期貨名稱</th>
+                  <th data-slot="table-head" class="table-head table-head-align-left" style="min-width:220px;position:sticky;left:0;z-index:12;background:var(--comp-sticky-col-bg);overflow:hidden;">
+                    <span id="etff-th-label" class="table-head-sort-container table-head-align-left">
+                      <button class="th-search-ico" type="button" onclick="openEtfFThSearch();event.stopPropagation();"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg></button>
+                      <span>名稱</span>
+                    </span>
+                    <div id="etff-th-search" class="th-search-field">
+                      <button class="th-search-ico" type="button" onclick="closeEtfFThSearch();event.stopPropagation();"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg></button>
+                      <input type="text" style="width:0;flex:1;" placeholder="搜尋名稱" onclick="event.stopPropagation();" oninput="etfFNameQ=this.value;filterEtfF()">
+                      <button class="th-search-field-close" type="button" onclick="closeEtfFThSearch();event.stopPropagation();">✕</button>
+                    </div>
+                  </th>
                   <th data-slot="table-head" class="table-head table-head-align-center" style="min-width:110px;">關鍵訊號</th>
                   <th data-slot="table-head" class="table-head table-head-align-right" style="min-width:110px;">比率增減(%)</th>
                   <th data-slot="table-head" class="table-head table-head-align-right" style="min-width:110px;">投資比率(%)</th>
@@ -6631,15 +6664,22 @@
     };
 
     // ── 期貨 chip filter (關鍵異動訊號) ──────────────────────
+    let sigfChip = 'all';
     window.filterSigF = function(type) {
+      if (type !== undefined) sigfChip = type;
       ['all','new','add','reduce','exit'].forEach(t => {
         const el = document.getElementById('sigf-chip-' + t);
         if (!el) return;
         const inner = el.querySelector('[data-variant],[class*="tag"]');
-        if (inner) inner.dataset.active = (t === type) ? 'true' : '';
+        if (inner) inner.dataset.active = (t === sigfChip) ? 'true' : '';
       });
+      const q = sigfNameQ.toLowerCase();
       document.querySelectorAll('#tbody-sig-futures tr[data-sig]').forEach(tr => {
-        tr.style.display = (type === 'all' || tr.dataset.sig === type) ? '' : 'none';
+        const sig = tr.dataset.sig;
+        const name = tr.querySelector('td:nth-child(2)')?.textContent?.toLowerCase() || '';
+        const matchChip = (sigfChip === 'all' || sig === sigfChip);
+        const matchSearch = !q || name.includes(q);
+        tr.style.display = (matchChip && matchSearch) ? '' : 'none';
       });
     };
 
