@@ -4699,7 +4699,7 @@
       <td data-slot="table-cell" class="table-cell table-cell-align-left sticky-col" style="left:0"><div style="display:flex;align-items:center;gap:16px;"><input type="checkbox" class="stk-cb" ${stkSelected.has(r.code) ? 'checked' : ''} onchange="toggleStkRow('${r.code}',this)" onclick="event.stopPropagation();" style="flex-shrink:0;"><span style="display:inline-flex;flex-direction:column;align-items:flex-start;"><span class="tabular-nums row-name">${r.code}</span><span class="t-sub" style="font-size:12px;">${r.name}</span></span></div></td>
       <td data-slot="table-cell" class="table-cell table-cell-align-center t-status-cell">${(() => {
         let h = BADGE[r.status] || '';
-        if (r.status !== 'new' && r.status !== 'clear' && r.streak > 0) {
+        if (r.status !== 'new' && r.status !== 'clear' && r.status !== 'hold' && r.streak > 0) {
           h = h.replace('</span>', ` ${r.streak}天</span>`);
         }
         return h;
@@ -5088,7 +5088,7 @@
       <td data-slot="table-cell" class="table-cell table-cell-align-left sticky-col" style="left:0"><span style="display:inline-flex;flex-direction:column;align-items:flex-start;"><span class="row-name">${r.name}</span><span class="tabular-nums cell-code">${r.code}</span></span></td>
       <td data-slot="table-cell" class="table-cell table-cell-align-center t-status-cell">${(() => {
         let h = BADGE[r.status] || '';
-        if (r.status !== 'new' && r.status !== 'clear' && r.streak > 0) {
+        if (r.status !== 'new' && r.status !== 'clear' && r.status !== 'hold' && r.streak > 0) {
           h = h.replace('</span>', ` ${r.streak}天</span>`);
         }
         return h;
