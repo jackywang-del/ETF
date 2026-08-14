@@ -6585,7 +6585,7 @@
       const rows = FUTURES_SIGNALS.map((r,i) => `
         <tr data-slot="table-row" class="table-row animate-slide-up" data-sig="${r.sig}" style="animation-delay:${i*0.02}s">
           <td data-slot="table-cell" class="table-cell table-cell-align-center t-status-cell sticky-col" style="left:0">${pill(r.sig, null, 'signal')}</td>
-          <td data-slot="table-cell" class="table-cell table-cell-align-left sticky-col" style="left:118px">
+          <td data-slot="table-cell" class="table-cell table-cell-align-left sticky-col" style="left:118px;height:55px;">
             <span>${r.name}</span>
           </td>
           <td data-slot="table-cell" class="table-cell table-cell-align-right">${colorNum(r.chg)}</td>
@@ -6683,7 +6683,7 @@
         const ratioVal = parseFloat(r.ratio) || 0;
         return `
         <tr data-slot="table-row" class="table-row animate-slide-up" data-etf-sig="${r.sig}" style="animation-delay:${i*0.02}s">
-          <td data-slot="table-cell" class="table-cell table-cell-align-left sticky-col" style="left:0">
+          <td data-slot="table-cell" class="table-cell table-cell-align-left sticky-col" style="left:0;height:55px;">
             <span>${r.name}</span>
           </td>
           <td data-slot="table-cell" class="table-cell table-cell-align-center t-status-cell">${pill(r.sig, r.days)}</td>
@@ -6726,7 +6726,7 @@
       tbody.innerHTML = sorted.map((r, i) => {
         const ratioVal = parseFloat(r.ratio) || 0;
         return `<tr data-slot="table-row" class="table-row animate-slide-up" data-etf-sig="${r.sig}" style="animation-delay:${i*0.02}s">
-          <td data-slot="table-cell" class="table-cell table-cell-align-left sticky-col" style="left:0"><span>${r.name}</span></td>
+          <td data-slot="table-cell" class="table-cell table-cell-align-left sticky-col" style="left:0;height:55px;"><span>${r.name}</span></td>
           <td data-slot="table-cell" class="table-cell table-cell-align-center t-status-cell">${pill(r.sig, r.days)}</td>
           <td data-slot="table-cell" class="table-cell table-cell-align-right">${r.ratioChg === '—' ? '<span class="tabular-nums text-flat">0</span>' : colorNum(r.ratioChg)}</td>
           <td data-slot="table-cell" class="table-cell table-cell-align-center t-status-cell">${fmtRatioBarInterp(ratioVal, combinedMin, combinedMax, combinedAvg)}</td>
