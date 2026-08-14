@@ -1783,7 +1783,7 @@
                   <!-- 股票/期貨 toggle（整合進 chip bar） -->
                   <div id="sig-asset-bar" class="pill-toggle" role="radiogroup">
                     <button type="button" id="sig-asset-stock" class="pill-toggle-btn" data-state="active" onclick="setSigAsset('stock',this)">股票</button>
-                    <button type="button" id="sig-asset-futures" class="pill-toggle-btn" data-state="inactive" onclick="setSigAsset('futures',this)">期貨</button>
+                    <button type="button" id="sig-asset-futures" class="pill-toggle-btn" data-state="inactive" onclick="setSigAsset('futures',this)">期權</button>
                   </div>
                   <!-- divider -->
                   <div style="width:1px;height:20px;background:var(--comp-table-border);flex-shrink:0;"></div>
@@ -2891,7 +2891,7 @@
               <!-- 股票/期貨 toggle -->
               <div id="etf-asset-bar" class="pill-toggle" role="radiogroup">
                 <button type="button" id="etf-asset-stock" class="pill-toggle-btn" data-state="active" onclick="setEtfAsset('stock',this)">股票</button>
-                <button type="button" id="etf-asset-futures" class="pill-toggle-btn" data-state="inactive" onclick="setEtfAsset('futures',this)">期貨</button>
+                <button type="button" id="etf-asset-futures" class="pill-toggle-btn" data-state="inactive" onclick="setEtfAsset('futures',this)">期權</button>
               </div>
               <!-- divider -->
               <div style="width:1px;height:20px;background:var(--comp-table-border);flex-shrink:0;"></div>
@@ -6609,7 +6609,7 @@
               <!-- 股票/期貨 toggle（期貨狀態） -->
               <div class="pill-toggle" role="radiogroup">
                 <button type="button" class="pill-toggle-btn" data-state="inactive" onclick="setSigAsset('stock',document.getElementById('sig-asset-stock'))">股票</button>
-                <button type="button" class="pill-toggle-btn" data-state="active" onclick="setSigAsset('futures',document.getElementById('sig-asset-futures'))">期貨</button>
+                <button type="button" class="pill-toggle-btn" data-state="active" onclick="setSigAsset('futures',document.getElementById('sig-asset-futures'))">期權</button>
               </div>
               <!-- divider -->
               <div style="width:1px;height:20px;background:var(--comp-table-border);flex-shrink:0;"></div>
