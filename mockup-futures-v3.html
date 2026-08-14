@@ -2771,12 +2771,10 @@
             <div id="etf-card-newbuy" class="flex-1 flex flex-col rounded-md border border-gray-200 bg-gray-100 dark:bg-gray-125 px-3 py-2 card-accent-red card-clickable" onclick="toggleEtfCard(&#39;new&#39;)">
               <div id="etf-lbl-newbuy" class="text-[14px] card-field-label mb-1 flex items-center card-label">近1日<span class="card-new-label sig-pill" style="margin:-2px 0 -2px 4px;">首次買入</span></div>
               <div class="text-[24px] font-bold tabular-nums leading-tight"><span id="etf-sum-newbuy" class="tabular-nums text-up">1檔</span></div>
-              <div id="etf-sub-newbuy" class="text-[14px] text-up mt-0.5">+120張 <span style="color:var(--color-gray-600);">|</span> +0.8億</div>
             </div>
             <div id="etf-card-clear" class="flex-1 flex flex-col rounded-md border border-gray-200 bg-gray-100 dark:bg-gray-125 px-3 py-2 card-accent-green card-clickable" onclick="toggleEtfCard(&#39;clear&#39;)">
               <div id="etf-lbl-clear" class="text-[14px] card-field-label mb-1 flex items-center card-label">近1日<span class="card-clear-label sig-pill" style="margin:-2px 0 -2px 4px;">完全出清</span></div>
               <div class="text-[24px] font-bold tabular-nums leading-tight"><span id="etf-sum-clear" class="tabular-nums text-down">1檔</span></div>
-              <div id="etf-sub-clear" class="text-[14px] text-down mt-0.5">-85張 <span style="color:var(--color-gray-600);">|</span> -0.6億</div>
             </div>
           </div>
 
@@ -3953,6 +3951,23 @@
         { label: '市值(億)', val: r => r.mktVal, style: 'width:90px;' },
         { label: '產業', val: r => r.sector, left: true, style: 'width:110px;' },
       ],
+      'tbody-etf-futures': [
+        { label: '名稱', val: r => r.name, left: true, style: 'min-width:180px;', inlineSearch: 'etff', searchPlaceholder: '搜尋名稱', stickyLeft: 0 },
+        { label: '關鍵訊號', val: r => {
+            if (r.sig === 'new') return 100000;
+            if (r.sig === 'add') return 80000 + (r.days || 0);
+            if (r.sig === 'hold') return 60000 + (r.days || 0);
+            if (r.sig === 'reduce') return 40000 + (r.days || 0);
+            if (r.sig === 'exit') return 20000;
+            return 0;
+        }, center: true, style: 'width:110px;' },
+        { label: '比率增減(%)', val: r => parseFloat(r.ratioChg) || 0, style: 'width:90px;' },
+        { label: '投資比率(%)', val: r => parseFloat(r.ratio) || 0, center: true, fixedWidth: true, style: 'width:130px;' },
+        { label: '增減口數', val: r => parseFloat(r.chg) || 0, style: 'width:100px;' },
+        { label: '持有口數', val: r => parseInt(r.hold) || 0, style: 'width:100px;' },
+        { label: '', val: r => 0, noSort: true, style: 'width:90px;' },
+        { label: '', val: r => 0, noSort: true, left: true, style: 'width:110px;' },
+      ],
     };
 
     const sortStates = {
@@ -3962,6 +3977,7 @@
       'tbody-sig-all': { col: 0, asc: false },
       'tbl-stk': { col: 1, asc: false },
       'tbl-etf': { col: 1, asc: false },
+      'tbody-etf-futures': { col: 1, asc: false },
     };
 
     const renderMap = {
@@ -3971,6 +3987,7 @@
       'tbody-sig-all': () => renderSignals(),
       'tbl-stk': () => renderStkTable(),
       'tbl-etf': () => renderEtfTable(),
+      'tbody-etf-futures': () => renderEtfFuturesTable(),
     };
 
     // 各表格預設排序優先序（點擊欄位時躍升為第一順位，其餘維持此順序）
@@ -4037,6 +4054,15 @@
         { col: 5, asc: false },
         { col: 6, asc: false },
         { col: 7, asc: true  },
+        { col: 0, asc: true  },
+      ],
+      'tbody-etf-futures': [
+        // 0=名稱, 1=關鍵訊號, 2=比率增減, 3=投資比率, 4=增減口數, 5=持有口數
+        { col: 1, asc: false },
+        { col: 2, asc: false },
+        { col: 3, asc: false },
+        { col: 4, asc: false },
+        { col: 5, asc: false },
         { col: 0, asc: true  },
       ],
     };
@@ -5019,14 +5045,15 @@
       set('etf-sub-count', ss);
 
       const mktVal = (n) => (n > 0 ? '+' : '') + n;
-      const sep = ' <span style="color:var(--color-gray-600);">|</span> ';
+      const futNew = (window.FUTURES_SIGNALS || []).filter(r => r.sig === 'new').length;
+      const futExit = (window.FUTURES_SIGNALS || []).filter(r => r.sig === 'exit').length;
       const mainData = {
-        '1d':     { aum: 285.13, aumChg: +2.1,  count: 32, countChg: +2, newbuy: 1, clear: 1, newSub: `+120張${sep}+0.8億`,  clearSub: `-85張${sep}-0.6億` },
-        '2d':     { aum: 285.13, aumChg: +1.5,  count: 32, countChg: +2, newbuy: 2, clear: 1, newSub: `+250張${sep}+1.8億`,  clearSub: `-85張${sep}-0.6億` },
-        '3d':     { aum: 285.13, aumChg: -0.8,  count: 32, countChg: +1, newbuy: 2, clear: 2, newSub: `+250張${sep}+1.8億`,  clearSub: `-170張${sep}-1.2億` },
-        '5d':     { aum: 285.13, aumChg: +3.7,  count: 32, countChg: +1, newbuy: 3, clear: 2, newSub: `+420張${sep}+3.1億`,  clearSub: `-170張${sep}-1.2億` },
-        '10d':    { aum: 285.13, aumChg: -7.9,  count: 32, countChg: -2, newbuy: 4, clear: 3, newSub: `+680張${sep}+5.2億`,  clearSub: `-320張${sep}-2.4億` },
-        'custom': { aum: 285.13, aumChg: +2.1,  count: 32, countChg: +2, newbuy: 1, clear: 1, newSub: `+120張${sep}+0.8億`,  clearSub: `-85張${sep}-0.6億` },
+        '1d':     { aum: 285.13, aumChg: +2.1,  count: 32, countChg: +2, newbuy: 1 + futNew, clear: 1 + futExit },
+        '2d':     { aum: 285.13, aumChg: +1.5,  count: 32, countChg: +2, newbuy: 2 + futNew, clear: 1 + futExit },
+        '3d':     { aum: 285.13, aumChg: -0.8,  count: 32, countChg: +1, newbuy: 2 + futNew, clear: 2 + futExit },
+        '5d':     { aum: 285.13, aumChg: +3.7,  count: 32, countChg: +1, newbuy: 3 + futNew, clear: 2 + futExit },
+        '10d':    { aum: 285.13, aumChg: -7.9,  count: 32, countChg: -2, newbuy: 4 + futNew, clear: 3 + futExit },
+        'custom': { aum: 285.13, aumChg: +2.1,  count: 32, countChg: +2, newbuy: 1 + futNew, clear: 1 + futExit },
       };
       const m = mainData[val] || mainData['1d'];
       const dur = 600;
@@ -5055,8 +5082,6 @@
 
       setAccent('etf-card-aum', m.aumChg, 'card-accent-blue');
       setAccent('etf-card-count', m.countChg, 'card-accent-orange');
-      setHtml('etf-sub-newbuy', m.newSub);
-      setHtml('etf-sub-clear', m.clearSub);
 
       etfSummaryLastValues.aum = m.aum;
       etfSummaryLastValues.count = m.count;
@@ -5203,10 +5228,12 @@
     function closeSigStockThSearch() { document.getElementById('sigStock-th-label').style.display = ''; const sf = document.getElementById('sigStock-th-search'); sf.classList.remove('open'); sf.querySelector('input').value = ''; sigSearchQ = ''; renderSignals(); }
     function openSigEtfThSearch() { document.getElementById('sigEtf-th-label').style.display = 'none'; const sf = document.getElementById('sigEtf-th-search'); sf.classList.add('open'); sf.querySelector('input').focus(); }
     function closeSigEtfThSearch() { document.getElementById('sigEtf-th-label').style.display = ''; const sf = document.getElementById('sigEtf-th-search'); sf.classList.remove('open'); sf.querySelector('input').value = ''; sigSearchQ = ''; renderSignals(); }
-    let sigfNameQ = '';
+    let sigfNameQ = '', sigfEtfQ = '';
     function openSigfThSearch() { document.getElementById('sigf-th-label').style.display = 'none'; const sf = document.getElementById('sigf-th-search'); sf.classList.add('open'); sf.querySelector('input').focus(); }
     function closeSigfThSearch() { document.getElementById('sigf-th-label').style.display = ''; const sf = document.getElementById('sigf-th-search'); sf.classList.remove('open'); sf.querySelector('input').value = ''; sigfNameQ = ''; filterSigF(); }
-    let etfFNameQ = '';
+    function openSigfEtfThSearch() { document.getElementById('sigf-etf-th-label').style.display = 'none'; const sf = document.getElementById('sigf-etf-th-search'); sf.classList.add('open'); sf.querySelector('input').focus(); }
+    function closeSigfEtfThSearch() { document.getElementById('sigf-etf-th-label').style.display = ''; const sf = document.getElementById('sigf-etf-th-search'); sf.classList.remove('open'); sf.querySelector('input').value = ''; sigfEtfQ = ''; filterSigF(); }
+    window.etfFNameQ = '';
     function openEtfFThSearch() { document.getElementById('etff-th-label').style.display = 'none'; const sf = document.getElementById('etff-th-search'); sf.classList.add('open'); sf.querySelector('input').focus(); }
     function closeEtfFThSearch() { document.getElementById('etff-th-label').style.display = ''; const sf = document.getElementById('etff-th-search'); sf.classList.remove('open'); sf.querySelector('input').value = ''; etfFNameQ = ''; filterEtfF(); }
     window.filterEtfF = function() {
@@ -6561,7 +6588,6 @@
           <td data-slot="table-cell" class="table-cell table-cell-align-left sticky-col" style="left:118px">
             <span>${r.name}</span>
           </td>
-          <td data-slot="table-cell" class="table-cell table-cell-align-right">${colorNum(r.amt)}</td>
           <td data-slot="table-cell" class="table-cell table-cell-align-right">${colorNum(r.chg)}</td>
           <td data-slot="table-cell" class="table-cell table-cell-align-left sig-link-cell" onclick="goToEtf('${r.etfCode}','${r.etfName}')">
             <span style="display:inline-flex;flex-direction:column;align-items:flex-start;">
@@ -6570,6 +6596,9 @@
             </span>
           </td>
           <td data-slot="table-cell" class="table-cell table-cell-align-left tabular-nums t-date">${r.date}</td>
+          <td data-slot="table-cell" class="table-cell"></td>
+          <td data-slot="table-cell" class="table-cell"></td>
+          <td data-slot="table-cell" class="table-cell"></td>
         </tr>`).join('');
 
       const html = `
@@ -6597,7 +6626,7 @@
                 <thead data-slot="table-header" class="table-header">
                   <tr data-slot="table-row" class="table-row">
                     <th data-slot="table-head" class="table-head table-head-align-center" style="width:110px;position:sticky;left:0;z-index:12;background:var(--comp-sticky-col-bg);">關鍵訊號</th>
-                    <th data-slot="table-head" class="table-head table-head-align-left" style="min-width:200px;position:sticky;left:118px;z-index:12;background:var(--comp-sticky-col-bg);overflow:hidden;">
+                    <th data-slot="table-head" class="table-head table-head-align-left" style="min-width:220px;position:sticky;left:118px;z-index:12;background:var(--comp-sticky-col-bg);overflow:hidden;">
                       <span id="sigf-th-label" class="table-head-sort-container table-head-align-left">
                         <button class="th-search-ico" type="button" onclick="openSigfThSearch();event.stopPropagation();"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg></button>
                         <span>名稱</span>
@@ -6608,10 +6637,22 @@
                         <button class="th-search-field-close" type="button" onclick="closeSigfThSearch();event.stopPropagation();">✕</button>
                       </div>
                     </th>
-                    <th data-slot="table-head" class="table-head table-head-align-right" style="min-width:90px;">金額(億)</th>
-                    <th data-slot="table-head" class="table-head table-head-align-right" style="min-width:90px;">增減口數</th>
-                    <th data-slot="table-head" class="table-head table-head-align-left" style="min-width:180px;">ETF</th>
-                    <th data-slot="table-head" class="table-head table-head-align-left" style="min-width:90px;">日期</th>
+                    <th data-slot="table-head" class="table-head table-head-align-right" style="width:120px;">增減口數</th>
+                    <th data-slot="table-head" class="table-head table-head-align-left" style="min-width:280px;overflow:hidden;">
+                      <span id="sigf-etf-th-label" class="table-head-sort-container table-head-align-left">
+                        <button class="th-search-ico" type="button" onclick="openSigfEtfThSearch();event.stopPropagation();"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg></button>
+                        <span>ETF</span>
+                      </span>
+                      <div id="sigf-etf-th-search" class="th-search-field">
+                        <button class="th-search-ico" type="button" onclick="closeSigfEtfThSearch();event.stopPropagation();"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg></button>
+                        <input type="text" style="width:0;flex:1;" placeholder="搜尋ETF" onclick="event.stopPropagation();" oninput="sigfEtfQ=this.value;filterSigF()">
+                        <button class="th-search-field-close" type="button" onclick="closeSigfEtfThSearch();event.stopPropagation();">✕</button>
+                      </div>
+                    </th>
+                    <th data-slot="table-head" class="table-head table-head-align-left" style="min-width:120px;">日期</th>
+                    <th data-slot="table-head" class="table-head" style="width:90px;"></th>
+                    <th data-slot="table-head" class="table-head" style="width:80px;"></th>
+                    <th data-slot="table-head" class="table-head" style="min-width:100px;"></th>
                   </tr>
                 </thead>
                 <tbody id="tbody-sig-futures" data-slot="table-body" class="table-body">${rows}</tbody>
@@ -6650,6 +6691,8 @@
           <td data-slot="table-cell" class="table-cell table-cell-align-center t-status-cell">${fmtRatioBarInterp(ratioVal, combinedMin, combinedMax, combinedAvg)}</td>
           <td data-slot="table-cell" class="table-cell table-cell-align-right">${colorNum(r.chg)}</td>
           <td data-slot="table-cell" class="table-cell table-cell-align-right"><span class="tabular-nums">${r.hold}</span></td>
+          <td data-slot="table-cell" class="table-cell"></td>
+          <td data-slot="table-cell" class="table-cell"></td>
         </tr>`;
       }).join('');
 
@@ -6657,33 +6700,42 @@
         <div id="etf-futures-view" style="display:none;" class="max-h-110 overflow-y-auto xqm-section-active" data-xqm-section="list">
           <div data-slot="table-container" class="table-container">
             <table data-slot="table" class="table">
-              <thead data-slot="table-header" class="table-header">
-                <tr data-slot="table-row" class="table-row">
-                  <th data-slot="table-head" class="table-head table-head-align-left" style="min-width:220px;position:sticky;left:0;z-index:12;background:var(--comp-sticky-col-bg);overflow:hidden;">
-                    <span id="etff-th-label" class="table-head-sort-container table-head-align-left">
-                      <button class="th-search-ico" type="button" onclick="openEtfFThSearch();event.stopPropagation();"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg></button>
-                      <span>名稱</span>
-                    </span>
-                    <div id="etff-th-search" class="th-search-field">
-                      <button class="th-search-ico" type="button" onclick="closeEtfFThSearch();event.stopPropagation();"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg></button>
-                      <input type="text" style="width:0;flex:1;" placeholder="搜尋名稱" onclick="event.stopPropagation();" oninput="etfFNameQ=this.value;filterEtfF()">
-                      <button class="th-search-field-close" type="button" onclick="closeEtfFThSearch();event.stopPropagation();">✕</button>
-                    </div>
-                  </th>
-                  <th data-slot="table-head" class="table-head table-head-align-center" style="min-width:110px;">關鍵訊號</th>
-                  <th data-slot="table-head" class="table-head table-head-align-right" style="min-width:110px;">比率增減(%)</th>
-                  <th data-slot="table-head" class="table-head table-head-align-center" style="min-width:128px;">投資比率(%)</th>
-                  <th data-slot="table-head" class="table-head table-head-align-right" style="min-width:100px;">增減口數</th>
-                  <th data-slot="table-head" class="table-head table-head-align-right" style="min-width:100px;">持有口數</th>
-                </tr>
-              </thead>
-              <tbody id="tbody-etf-futures" data-slot="table-body" class="table-body">${rows}</tbody>
+              <thead data-slot="table-header" class="table-header"></thead>
+              <tbody id="tbody-etf-futures" data-slot="table-body" class="table-body"></tbody>
             </table>
           </div>
         </div>`;
 
       const listView = document.getElementById('etf-list-view');
       if (listView) listView.insertAdjacentHTML('afterend', html);
+      buildThead('tbody-etf-futures');
+      renderEtfFuturesTable();
+    }
+
+    function renderEtfFuturesTable() {
+      const data = window.ETF_FUTURES || [];
+      const q = (window.etfFNameQ || '').toLowerCase();
+      const filtered = data.filter(r => q ? r.name.toLowerCase().includes(q) : true);
+      const tbody = document.getElementById('tbody-etf-futures');
+      if (!tbody) return;
+      if (!filtered.length) { tbody.innerHTML = '<tr class="empty-cell"><td colspan="8">無符合資料</td></tr>'; return; }
+      const sorted = sortData(filtered, 'tbody-etf-futures');
+      const combinedMax = window.ETF_COMBINED_MAX || Math.max(...data.map(r => parseFloat(r.ratio) || 0), 1);
+      const combinedMin = window.ETF_COMBINED_MIN || 0;
+      const combinedAvg = window.ETF_COMBINED_AVG || 0;
+      tbody.innerHTML = sorted.map((r, i) => {
+        const ratioVal = parseFloat(r.ratio) || 0;
+        return `<tr data-slot="table-row" class="table-row animate-slide-up" data-etf-sig="${r.sig}" style="animation-delay:${i*0.02}s">
+          <td data-slot="table-cell" class="table-cell table-cell-align-left sticky-col" style="left:0"><span>${r.name}</span></td>
+          <td data-slot="table-cell" class="table-cell table-cell-align-center t-status-cell">${pill(r.sig, r.days)}</td>
+          <td data-slot="table-cell" class="table-cell table-cell-align-right">${r.ratioChg === '—' ? '<span class="tabular-nums text-flat">0</span>' : colorNum(r.ratioChg)}</td>
+          <td data-slot="table-cell" class="table-cell table-cell-align-center t-status-cell">${fmtRatioBarInterp(ratioVal, combinedMin, combinedMax, combinedAvg)}</td>
+          <td data-slot="table-cell" class="table-cell table-cell-align-right">${colorNum(r.chg)}</td>
+          <td data-slot="table-cell" class="table-cell table-cell-align-right"><span class="tabular-nums">${r.hold}</span></td>
+          <td data-slot="table-cell" class="table-cell"></td>
+          <td data-slot="table-cell" class="table-cell"></td>
+        </tr>`;
+      }).join('');
     }
 
     // ── 關鍵異動訊號：股票/期貨切換 ──────────────────────────
@@ -6748,12 +6800,15 @@
         if (inner) inner.dataset.active = (t === sigfChip) ? 'true' : '';
       });
       const q = sigfNameQ.toLowerCase();
+      const qEtf = sigfEtfQ.toLowerCase();
       document.querySelectorAll('#tbody-sig-futures tr[data-sig]').forEach(tr => {
         const sig = tr.dataset.sig;
         const name = tr.querySelector('td:nth-child(2)')?.textContent?.toLowerCase() || '';
+        const etf = tr.querySelector('td:nth-child(4)')?.textContent?.toLowerCase() || '';
         const matchChip = (sigfChip === 'all' || sig === sigfChip);
         const matchSearch = !q || name.includes(q);
-        tr.style.display = (matchChip && matchSearch) ? '' : 'none';
+        const matchEtf = !qEtf || etf.includes(qEtf);
+        tr.style.display = (matchChip && matchSearch && matchEtf) ? '' : 'none';
       });
     };
 
