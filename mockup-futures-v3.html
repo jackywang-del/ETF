@@ -6514,7 +6514,7 @@
         if (sig === 'add')    baseLabel = '大幅加碼';
         if (sig === 'reduce') baseLabel = '大幅減碼';
       }
-      const lbl = (days && sig !== 'new' && sig !== 'exit') ? `${baseLabel} ${days}天` : baseLabel;
+      const lbl = (days && sig !== 'new' && sig !== 'exit' && sig !== 'hold') ? `${baseLabel} ${days}天` : baseLabel;
       const bgStyle = c.bg ? `background:${c.bg};color:#fff;` : '';
       return `<span class="${c.cls} sig-pill" style="cursor:default;display:inline-flex;align-items:center;height:28px;padding:0 8px;border-radius:999px;font-size:12px;font-weight:400;white-space:nowrap;${bgStyle}">${lbl}</span>`;
     }
