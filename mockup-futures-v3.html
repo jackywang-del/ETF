@@ -3484,7 +3484,7 @@
     // FORMAT HELPERS
     // ═══════════════════════════════════════════
     function fmtNum(n, d = 2) {
-      if (n === 0) return `<span class="text-flat">0.${'0'.repeat(d)}</span>`;
+      if (n === 0) return `<span class="text-flat">0</span>`;
       const s = Math.abs(n).toFixed(d);
       return n > 0 ? `<span class="tabular-nums text-up">+${s}</span>` : `<span class="tabular-nums text-down">-${s}</span>`;
     }
@@ -5080,7 +5080,14 @@
       const _eNZ = sorted.map(r => r.ratio).filter(v => v > 0);
       const etfRatioMax = _eNZ.length ? Math.max(..._eNZ) : 1;
       const etfRatioMin = _eNZ.length ? Math.min(..._eNZ) : 0;
-      const etfAvgRatio = sorted.length ? sorted.reduce((s, r) => s + r.ratio, 0) / sorted.length : 0;
+      const _allVals = [
+        ...sorted.map(r => r.ratio),
+        ...(window.ETF_FUTURES || []).map(r => parseFloat(r.ratio) || 0)
+      ].filter(v => v > 0);
+      const etfAvgRatio = _allVals.length ? _allVals.reduce((s, v) => s + v, 0) / _allVals.length : 0;
+      window.ETF_COMBINED_AVG = etfAvgRatio;
+      window.ETF_COMBINED_MAX = _allVals.length ? Math.max(..._allVals) : 1;
+      window.ETF_COMBINED_MIN = _allVals.length ? Math.min(..._allVals) : 0;
       tbody.innerHTML = sorted.map((r, i) => {
         const mktVal = r.mktVal === 0 ? '<span class="text-flat">—</span>' : `<span class="tabular-nums">${r.mktVal.toFixed(2)}</span>`;
         const shares = r.shares === 0 ? '<span class="text-flat">—</span>' : `<span class="tabular-nums">${r.shares.toLocaleString('zh-TW')}</span>`;
@@ -5342,6 +5349,7 @@
     function initStkFlowChart() {
       const container = document.getElementById('stk-flow-chart');
       if (!container || stkChart) return;
+      container.innerHTML = ''; // 清掉靜態 HTML 殘留的 Lightweight Charts DOM
       const isDark = document.documentElement.dataset.theme === 'dark';
       stkChart = LightweightCharts.createChart(container, {
         width: container.clientWidth, height: 200,
@@ -5399,6 +5407,7 @@
     function initStkNavInteraction() {
       const navContainer = document.getElementById('stk-flow-navigator');
       if (!navContainer || stkNavChart) return;
+      navContainer.innerHTML = ''; // 清掉靜態 HTML 殘留的 Lightweight Charts DOM
 
       const isDark = document.documentElement.dataset.theme === 'dark';
       stkNavChart = LightweightCharts.createChart(navContainer, {
@@ -5781,7 +5790,22 @@
 
     // Init when page-stock becomes visible
     const stkObserver = new MutationObserver(() => {
-      if (document.getElementById('page-stock').classList.contains('active')) initStkFlowChart();
+      if (document.getElementById('page-stock').classList.contains('active')) {
+        requestAnimationFrame(() => {
+          initStkFlowChart();
+          // Force resize in case chart was initialized with width:0 from static HTML
+          if (stkChart) {
+            const c = document.getElementById('stk-flow-chart');
+            const w = c ? c.clientWidth : 0;
+            if (w > 0) stkChart.resize(w, 200);
+          }
+          if (stkNavChart) {
+            const nc = document.getElementById('stk-flow-navigator');
+            const nw = nc ? nc.clientWidth : 0;
+            if (nw > 0) { stkNavChart.resize(nw, 32); stkNavChart.timeScale().fitContent(); }
+          }
+        });
+      }
     });
     stkObserver.observe(document.getElementById('page-stock'), { attributes: true, attributeFilter: ['class'] });
 
@@ -6493,10 +6517,10 @@
     ];
 
     window.ETF_FUTURES = [
-      { sig:'add',    days:2, name:'台灣加權股價指數期貨', ratioChg:'+2.50', ratio:'8.00',  chg:'+36',  hold:'120' },
-      { sig:'hold',   days:5, name:'小型台指期貨',         ratioChg:'—',     ratio:'3.20', chg:'—',    hold:'500' },
-      { sig:'hold',   days:3, name:'電子期貨',             ratioChg:'—',     ratio:'1.80', chg:'—',    hold:'80'  },
-      { sig:'reduce', days:1, name:'金融期貨',             ratioChg:'-0.85', ratio:'2.40', chg:'-150', hold:'200' },
+      { sig:'add',    days:2, name:'台灣加權股價指數期貨', ratioChg:'+2.50', ratio:'8.00', avg:'5.50', chg:'+36',  hold:'120' },
+      { sig:'hold',   days:5, name:'小型台指期貨',         ratioChg:'—',     ratio:'3.20', avg:'3.20', chg:'—',    hold:'500' },
+      { sig:'hold',   days:3, name:'電子期貨',             ratioChg:'—',     ratio:'1.80', avg:'1.80', chg:'—',    hold:'80'  },
+      { sig:'reduce', days:1, name:'金融期貨',             ratioChg:'-0.85', ratio:'2.40', avg:'3.25', chg:'-150', hold:'200' },
     ];
 
     // ── pill helper ───────────────────────────────────────────
@@ -6611,17 +6635,23 @@
         else if (r.sig === 'exit') counts.clear++;
       });
 
-      const rows = ETF_FUTURES.map((r,i) => `
+      const combinedMax = window.ETF_COMBINED_MAX || Math.max(...ETF_FUTURES.map(r => parseFloat(r.ratio) || 0), 1);
+      const combinedMin = window.ETF_COMBINED_MIN || 0;
+      const combinedAvg = window.ETF_COMBINED_AVG || 0;
+      const rows = ETF_FUTURES.map((r,i) => {
+        const ratioVal = parseFloat(r.ratio) || 0;
+        return `
         <tr data-slot="table-row" class="table-row animate-slide-up" data-etf-sig="${r.sig}" style="animation-delay:${i*0.02}s">
           <td data-slot="table-cell" class="table-cell table-cell-align-left sticky-col" style="left:0">
             <span>${r.name}</span>
           </td>
           <td data-slot="table-cell" class="table-cell table-cell-align-center t-status-cell">${pill(r.sig, r.days)}</td>
-          <td data-slot="table-cell" class="table-cell table-cell-align-right">${colorNum(r.ratioChg)}</td>
-          <td data-slot="table-cell" class="table-cell table-cell-align-right"><span class="tabular-nums">${r.ratio}</span></td>
+          <td data-slot="table-cell" class="table-cell table-cell-align-right">${r.ratioChg === '—' ? '<span class="tabular-nums text-flat">0</span>' : colorNum(r.ratioChg)}</td>
+          <td data-slot="table-cell" class="table-cell table-cell-align-center t-status-cell">${fmtRatioBarInterp(ratioVal, combinedMin, combinedMax, combinedAvg)}</td>
           <td data-slot="table-cell" class="table-cell table-cell-align-right">${colorNum(r.chg)}</td>
           <td data-slot="table-cell" class="table-cell table-cell-align-right"><span class="tabular-nums">${r.hold}</span></td>
-        </tr>`).join('');
+        </tr>`;
+      }).join('');
 
       const html = `
         <div id="etf-futures-view" style="display:none;" class="max-h-110 overflow-y-auto xqm-section-active" data-xqm-section="list">
@@ -6642,7 +6672,7 @@
                   </th>
                   <th data-slot="table-head" class="table-head table-head-align-center" style="min-width:110px;">關鍵訊號</th>
                   <th data-slot="table-head" class="table-head table-head-align-right" style="min-width:110px;">比率增減(%)</th>
-                  <th data-slot="table-head" class="table-head table-head-align-right" style="min-width:110px;">投資比率(%)</th>
+                  <th data-slot="table-head" class="table-head table-head-align-center" style="min-width:128px;">投資比率(%)</th>
                   <th data-slot="table-head" class="table-head table-head-align-right" style="min-width:100px;">增減口數</th>
                   <th data-slot="table-head" class="table-head table-head-align-right" style="min-width:100px;">持有口數</th>
                 </tr>
