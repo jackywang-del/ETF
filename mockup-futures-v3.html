@@ -346,7 +346,7 @@
       align-self: stretch;
       padding: 2px;
       border-radius: 999px;
-      background: #3d3d3d;
+      background: rgba(255,255,255,0.1); /* dark 軌道 */
       flex-shrink: 0;
       gap: 1px;
     }
@@ -360,28 +360,22 @@
       background: transparent;
       font-size: 13px;
       font-weight: 400;
-      color: #989898;
+      color: #989898; /* dark 未選中 */
       cursor: pointer;
       white-space: nowrap;
       transition: background 0.12s, color 0.12s;
     }
     .pill-toggle-btn[data-state="active"] {
-      background: #ffffff;
-      color: #0f0f0f;
+      background: #3b82f6;
+      color: #ffffff;
       font-weight: 500;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
-    /* Light mode overrides */
+    /* Light mode */
     :root[data-theme=light] .pill-toggle {
-      background: #c3c3c3; /* xq-gray-300 light */
+      background: rgba(0,0,0,0.1);
     }
     :root[data-theme=light] .pill-toggle-btn {
-      color: #626262; /* xq-gray-650 light */
-    }
-    :root[data-theme=light] .pill-toggle-btn[data-state="active"] {
-      background: #ffffff;
-      color: #0f0f0f;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      color: #626262;
     }
     [data-platform="xqm"] #sig-sticky-zone {
       top: 119px;
